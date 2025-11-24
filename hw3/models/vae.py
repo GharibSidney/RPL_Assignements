@@ -94,7 +94,7 @@ class ConvVAE(nn.Module):
     def _gaussian_nll(self, x, mean, logvar):
         logvar_clamped = torch.clamp(logvar, min=-10, max=10)  # TODO: clamp logvar between -10 and 10 for stability
         var = torch.exp(logvar_clamped)  # TODO: exponentiate the clamped log-variance
-        log_term = torch.log(max(var, 1e-8))  # TODO: compute log-term for Gaussian NLL
+        log_term = torch.log(max(var, 1e-8))# Sidney might trylog_term = torch.log(var + 1e-8) instead   # TODO: compute log-term for Gaussian NLL
         squared_error = torch.pow(x - mean, 2)  # TODO: squared reconstruction error
         nll = 0.5 * (log_term + squared_error / var) ## negative log likelihood
         return nll.flatten(start_dim=1).sum(dim=1)
@@ -105,11 +105,11 @@ class ConvVAE(nn.Module):
 
     def forward(self, batch):
         x = batch["images"]
-        mu, logvar = ...  # TODO: encode the input
-        z = ...  # TODO: sample from the latent distribution
-        recon_mu, recon_logvar = ...  # TODO: decode the latent sample
-        recon_loss = ...  # TODO: compute reconstruction loss (per sample)
-        kl = ...  # TODO: compute KL divergence term (per sample)
+        mu, logvar = self.encode(x)  # TODO: encode the input
+        z = self.reparameterize(mu=mu, logvar=logvar, sample=True)  # TODO: sample from the latent distribution
+        recon_mu, recon_logvar = self.decode(z=z)  # TODO: decode the latent sample
+        recon_loss = self._gaussian_nll(x, recon_mu, recon_logvar)  # TODO: compute reconstruction loss (per sample)
+        kl = self._kl_divergence(mu, logvar)  # TODO: compute KL divergence term (per sample)
         loss = (recon_loss + kl).mean() ## mean is used to aggregate the total loss across the batch
         return {
             "loss": loss,
