@@ -129,9 +129,9 @@ class DenoiseUNet(nn.Module):
 
     def q_sample(self, x_start, t, noise):
         shape = (t.size(0),) + (1,) * (x_start.dim() - 1)
-        mean = ...  # TODO: compute the mean of q(x_t | x_0), hint: use self.sqrt_alphas_cumprod
-        std = ...  # TODO: compute the standard deviation term, hint: use self.sqrt_one_minus_alphas_cumprod
-        return ...  # TODO: return the noisy sample x_t
+        mean = self.sqrt_alphas_cumprod[t].view(shape) # TODO: compute the mean of q(x_t | x_0), hint: use self.sqrt_alphas_cumprod
+        std = self.sqrt_one_minus_alphas_cumprod[t].view(shape)  #...  # TODO: compute the standard deviation term, hint: use self.sqrt_one_minus_alphas_cumprod
+        return mean * x_start + std * noise #...  # TODO: return the noisy sample x_t
 
     def forward(self, batch):
         x0 = batch["images"]
