@@ -137,21 +137,21 @@ class DenoiseUNet(nn.Module):
         x0 = batch["images"]
         t = batch.get("timesteps")
         if t is None:
-            t = ...  # TODO: draw random timesteps for the batch
+            t = torch.randint(0, self.timesteps, (x0.size(0),))  # TODO: draw random timesteps for the batch
         noise = batch.get("noise")
         if noise is None:
-            noise = ...  # TODO: draw Gaussian noise for the forward process
-        xt = ...  # TODO: sample from q(x_t | x_0)
+            noise =  torch.randn_like(x0)  # TODO: draw Gaussian noise for the forward process
+        xt = self.q_sample(x0, t, noise)  # TODO: sample from q(x_t | x_0)
         time_emb = self.time_embedding(t)
-        h0 = ...  # TODO: apply the initial convolution
-        skip0, h1 = ...  # TODO: apply the first down block
-        skip1, h2 = ...  # TODO: apply the second down block
-        skip2, h3 = ...  # TODO: apply the last down block
-        h_mid = ...  # TODO: apply the middle residual block
-        h = ...  # TODO: apply the first up block
-        h = ...  # TODO: apply the second up block
-        h = ...  # TODO: apply the final up block
-        pred_noise = ...  # TODO: map to the predicted noise
+        h0 = self.model["init"](xt)  # TODO: apply the initial convolution
+        skip0, h1 = self.model["down0"](h0, time_emb)  # TODO: apply the first down block
+        skip1, h2 = self.model["down1"](h1, time_emb)  # TODO: apply the second down block
+        skip2, h3 = self.model["down2"](h2, time_emb)  # TODO: apply the last down block
+        h_mid = self.model["mid"](h3, time_emb)  # TODO: apply the middle residual block
+        h = self.model["up2"](h_mid, skip2, time_emb) # TODO: apply the first up block
+        h = self.model["up1"](h, skip1, time_emb)   # TODO: apply the second up block
+        h = self.model["up0"](h, skip0, time_emb) # TODO: apply the final up block
+        pred_noise = self.model["out"](h)  # TODO: map to the predicted noise
         loss = F.mse_loss(pred_noise, noise, reduction='mean')
         return {
             "loss": loss,
