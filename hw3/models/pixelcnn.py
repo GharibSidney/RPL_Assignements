@@ -10,18 +10,21 @@ class MaskedConv2d(nn.Conv2d):
         super().__init__(in_channels, out_channels, kernel_size, **kwargs)
         self.mask_type = mask_type
         self.register_buffer("mask", torch.ones_like(self.weight))
-        self._build_mask()
+        self.mask = self._build_mask()
 
     def _build_mask(self):
-        mask = torch.zeros_like(self.weight) # Sidney mask = torch.ones_like(self.weight)
+        mask = torch.ones_like(self.weight)
+        print("Mask shape", mask.shape)
         # Mask type A blocks the current pixel in addition to future pixels; type B allows the current pixel.
-        mask[: self.kernel_size[0] // 2, ...] = 1.0
-        self.mask[self.kernel_size[0] // 2, : self.kernel_size[1] // 2, ...] = 1.0
-        #...  # TODO: zero out rows strictly below the current pixel
-        #...  # TODO: zero out columns to the right of the current pixel (respecting mask type)
-        if self.mask_type == "B":  # sidney if self.mask_type == "A":
-            mask[self.kernel_size[0] // 2, self.kernel_size[1] // 2, ...] = 1.0
-            #...  # TODO: zero the current pixel for type A masks
+        kernel_height, kernel_width = self.weight.shape[2], self.weight.shape[3]
+        y_center, x_center = kernel_height // 2, kernel_width // 2
+        # TODO: zero out rows strictly below the current pixel
+        mask[:, :, y_center+1:, :] = 0
+        # TODO: zero out columns to the right of the current pixel (respecting mask type)
+        mask[:, :, y_center, x_center+1:] = 0
+        if self.mask_type == "A":
+            # TODO: zero the current pixel for type A masks
+            mask[:, :, y_center, x_center] = 0
         return mask
 
     def forward(self, x):
@@ -103,7 +106,7 @@ class PixelCNN(nn.Module):
         logits = logits.view(b, self.image_channels, self.bins, h, w)
         targets = batch.get("targets")
         if targets is None:
-            targets = targets = torch.clamp((x * (self.bins - 1)).long(), 0, self.bins - 1)#...  # TODO: quantise the input images to bin indices
+            targets = torch.clamp((x * (self.bins - 1)).long(), 0, self.bins - 1)#...  # TODO: quantise the input images to bin indices
         else:
             targets = targets.long()
         logits_flat = logits.permute(0, 3, 4, 1, 2).reshape(-1, self.bins)
