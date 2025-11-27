@@ -94,13 +94,14 @@ class ConvVAE(nn.Module):
     def _gaussian_nll(self, x, mean, logvar):
         logvar_clamped = torch.clamp(logvar, min=-10, max=10)  # TODO: clamp logvar between -10 and 10 for stability
         var = torch.exp(logvar_clamped)  # TODO: exponentiate the clamped log-variance
-        log_term = torch.log(max(var, 1e-8))# Sidney might trylog_term = torch.log(var + 1e-8) instead   # TODO: compute log-term for Gaussian NLL
+        log_term = torch.log(var + 1e-8)  # Sidney might trylog_term = torch.log(var + 1e-8) instead   # TODO: compute log-term for Gaussian NLL
         squared_error = torch.pow(x - mean, 2)  # TODO: squared reconstruction error
-        nll = 0.5 * (log_term + squared_error / var) ## negative log likelihood
+        nll = 0.5 * (math.log(2 * math.pi) + log_term + squared_error / var)  ## negative log likelihood
+
         return nll.flatten(start_dim=1).sum(dim=1)
 
     def _kl_divergence(self, mu, logvar):
-        kl = (-0.5 * torch.sum(1 + logvar - mu**2 - torch.exp(logvar), dim=1)).mean() #...  # TODO: compute KL divergence between diagonal Gaussian and standard normal distribution # SIDNEY Not sure about this one
+        kl = -0.5 * torch.sum(1 + logvar - mu**2 - torch.exp(logvar), dim=1)#.mean() #...  # TODO: compute KL divergence between diagonal Gaussian and standard normal distribution # SIDNEY Not sure about this one
         return kl
 
     def forward(self, batch):
