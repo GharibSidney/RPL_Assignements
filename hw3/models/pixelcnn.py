@@ -14,7 +14,6 @@ class MaskedConv2d(nn.Conv2d):
 
     def _build_mask(self):
         mask = torch.ones_like(self.weight)
-        print("Mask shape", mask.shape)
         # Mask type A blocks the current pixel in addition to future pixels; type B allows the current pixel.
         kernel_height, kernel_width = self.weight.shape[2], self.weight.shape[3]
         y_center, x_center = kernel_height // 2, kernel_width // 2
