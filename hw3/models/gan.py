@@ -71,6 +71,8 @@ class DCGAN(nn.Module):
         noise = batch.get("noise")
         if noise is None:
             noise = torch.randn(real.size(0), self.latent_dim, 1, 1, device=real.device) #...  # TODO: draw latent noise for the generator
+        elif noise.ndim == 2:
+            noise = noise.view(noise.size(0), noise.size(1), 1, 1)
         fake_images = self.generator(noise)  # TODO: generate fake images from the latent noise
         logits_real = self.discriminator(real)#...  # TODO: score real images with the discriminator
         logits_fake_detached = self.discriminator(fake_images.detach()) #...  # TODO: score fake images without backpropagating into G
