@@ -93,6 +93,7 @@ def p_sample_loop(model, shape, timesteps, T, coefficients, noise=None):
     """
     Given the model and the shape of the image, returns a sample from the data 
     distribution by running through the backward diffusion process.
+
     Inputs:
         model: The denoising model
         shape: Shape of the samples; set as (batch_size, 3, 32, 32)
@@ -103,24 +104,19 @@ def p_sample_loop(model, shape, timesteps, T, coefficients, noise=None):
     """
     with torch.no_grad():
         b = shape[0]
-        device = next(model.parameters()).device
         # Start from pure noise (x_T)
-        img = torch.randn(shape, device=device) if noise is None else noise[0]
+        img = torch.randn(shape, device=model.device) if noise is None else noise[0]
         imgs = []
+
         for i in tqdm(
             reversed(range(0, timesteps)), desc="Sampling", total=T, leave=False
         ):
             if noise is None:
-                img = p_sample(
-                    model, img, torch.full((b,), i, device=device, dtype=torch.long), 
-                    i, coefficients
-                )
+                img = None  # WRITE CODE HERE
             else:
-                img = p_sample(
-                    model, img, torch.full((b,), i, device=device, dtype=torch.long),
-                    i, coefficients, noise=noise[timesteps - i]
-                )
+                img = None  # WRITE CODE HERE
             imgs.append(img.cpu())
+
         return torch.stack(imgs)
 
 
