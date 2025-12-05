@@ -72,19 +72,20 @@ def p_sample(model, x, t, t_index, coefficients, noise=None):
         )
 
         p_mean = None  # WRITE CODE HERE
-        epsilone = model(x, t)
-        sqrt_recip_alphas_t = extract(sqrt_recip_alphas, t, x.shape)
+        predicted_noise = model(x, t)
         betas_t = extract(betas, t, x.shape)
-        sqrt_one_minus_alpha_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t, x.shape)
-        p_mean =  sqrt_recip_alphas_t * (x - betas_t * epsilone / sqrt_one_minus_alpha_cumprod_t)
+        sqrt_one_minus_alphas_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t, x.shape)
+        sqrt_recip_alphas_t = extract(sqrt_recip_alphas, t, x.shape)
+        
+        p_mean = sqrt_recip_alphas_t * (x - (betas_t / sqrt_one_minus_alphas_cumprod_t) * predicted_noise)
         if t_index == 0:
             sample = p_mean
         else:
             sample = None  # WRITE CODE HERE
-            noise = torch.randn_like(x)
-            posterior_var_t = extract(posterior_variance, t, x.shape)
-            sample = p_mean + torch.sqrt(posterior_var_t) * noise
-
+            posterior_variance_t = extract(posterior_variance, t, x.shape)
+            if noise is None:
+                noise = torch.randn_like(x)
+            sample = p_mean + torch.sqrt(posterior_variance_t) * noise
         return sample
 
 
@@ -92,7 +93,6 @@ def p_sample_loop(model, shape, timesteps, T, coefficients, noise=None):
     """
     Given the model and the shape of the image, returns a sample from the data 
     distribution by running through the backward diffusion process.
-
     Inputs:
         model: The denoising model
         shape: Shape of the samples; set as (batch_size, 3, 32, 32)
@@ -103,26 +103,24 @@ def p_sample_loop(model, shape, timesteps, T, coefficients, noise=None):
     """
     with torch.no_grad():
         b = shape[0]
+        device = next(model.parameters()).device
         # Start from pure noise (x_T)
-        img = torch.randn(shape, device=model.device) if noise is None else noise[0]
+        img = torch.randn(shape, device=device) if noise is None else noise[0]
         imgs = []
-
         for i in tqdm(
             reversed(range(0, timesteps)), desc="Sampling", total=T, leave=False
         ):
             if noise is None:
-                img = None  # WRITE CODE HERE
                 img = p_sample(
-                    model, img, torch.full((b,), i, device=model.device, dtype=torch.long), i, coefficients
+                    model, img, torch.full((b,), i, device=device, dtype=torch.long), 
+                    i, coefficients
                 )
             else:
-                img = None  # WRITE CODE HERE
                 img = p_sample(
-                    model, img, torch.full((b,), i, device=model.device, dtype=torch.long),
-                      i, coefficients, noise=noise[timesteps - i]
+                    model, img, torch.full((b,), i, device=device, dtype=torch.long),
+                    i, coefficients, noise=noise[timesteps - i]
                 )
             imgs.append(img.cpu())
-
         return torch.stack(imgs)
 
 
