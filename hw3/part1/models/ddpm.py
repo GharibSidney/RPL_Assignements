@@ -137,7 +137,9 @@ class DenoiseUNet(nn.Module):
         x0 = batch["images"]
         t = batch.get("timesteps")
         if t is None:
-            t = torch.randint(0, self.timesteps, (x0.size(0),))  # TODO: draw random timesteps for the batch
+            t = torch.randint(0, self.timesteps, (x0.size(0),), device=x0.device)  # TODO: draw random timesteps for the batch
+        else:
+            t = t.to(x0.device)
         noise = batch.get("noise")
         if noise is None:
             noise =  torch.randn_like(x0)  # TODO: draw Gaussian noise for the forward process

@@ -1,0 +1,48 @@
+{
+  "DCGAN": {
+    "baseline": {
+      "epochs": 30,
+      "params": 1846980,
+      "kid": 0.05922116756439209,
+      "sampling_time_s": 0.020473199998377822,
+      "throughput_img_per_s": 50016.607080531416,
+      "train_time_total_s": 210.89742730004946,
+      "train_time_per_epoch_s": 7.029914243334982
+    }
+  },
+  "VAE": {
+    "baseline": {
+      "epochs": 30,
+      "params": 3518214,
+      "kid": 0.296482617855072,
+      "nll": -3623.202247265625,
+      "sampling_time_s": 0.020860199991147965,
+      "throughput_img_per_s": 49088.695239476845,
+      "train_time_total_s": 166.83106550009688,
+      "train_time_per_epoch_s": 5.561035516669896
+    }
+  },
+  "PixelCNN": {
+    "baseline": {
+      "epochs": 30,
+      "params": 268992,
+      "kid": 0.161173038482666,
+      "nll": 3.8218883686065674,
+      "sampling_time_s": 283.8230419999891,
+      "throughput_img_per_s": 3.6078818435045856,
+      "train_time_total_s": 542.5294239999348,
+      "train_time_per_epoch_s": 18.08431413333116
+    }
+  },
+  "DDPM": {
+    "baseline": {
+      "epochs": 30,
+      "params": 6993987,
+      "kid": 0.05981858730316162,
+      "sampling_time_s": 181.98717189999297,
+      "throughput_img_per_s": 5.626770224017309,
+      "train_time_total_s": 916.2292487999948,
+      "train_time_per_epoch_s": 30.540974959999826
+    }
+  }
+}
