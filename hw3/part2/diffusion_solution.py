@@ -112,8 +112,15 @@ def p_sample_loop(model, shape, timesteps, T, coefficients, noise=None):
         ):
             if noise is None:
                 img = None  # WRITE CODE HERE
+                img = p_sample(
+                    model, img, torch.full((b,), i, device=model.device, dtype=torch.long), i, coefficients
+                )
             else:
                 img = None  # WRITE CODE HERE
+                img = p_sample(
+                    model, img, torch.full((b,), i, device=model.device, dtype=torch.long),
+                      i, coefficients, noise=noise[timesteps - i]
+                )
             imgs.append(img.cpu())
 
         return torch.stack(imgs)
@@ -133,8 +140,9 @@ def p_losses(denoise_model, x_start, t, coefficients, noise=None):
     noise = torch.randn_like(x_start) if noise is None else noise
 
     x_noisy = None  # WRITE CODE HERE
+    x_noisy = q_sample(x_start, t, coefficients, noise)
     predicted_noise = None  # WRITE CODE HERE
-    
+    predicted_noise = denoise_model(x_noisy, t)
     loss = F.smooth_l1_loss(noise, predicted_noise)
 
     return loss
@@ -152,5 +160,6 @@ def t_sample(timesteps, batch_size, device):
             from 0 to timesteps-1
     """
     ts = None  # WRITE CODE HERE
+    ts = torch.randint(low=0, high=timesteps, size=(batch_size,), device=device)
     return ts
 
