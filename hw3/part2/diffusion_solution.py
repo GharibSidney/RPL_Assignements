@@ -26,7 +26,7 @@ def extract(a, t, x_shape):
     return out.reshape(batch_size, *((1,) * (len(x_shape) - 1))).to(t.device)
 
 
-def q_sample(x_start, t, coefficients, noise=None):
+def q_sample(x_start: torch.tensor, t:torch.tensor, coefficients:tuple, noise=None):
     """
     Forward Diffusion Sampling Process.
 
@@ -46,7 +46,9 @@ def q_sample(x_start, t, coefficients, noise=None):
     sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumprod = coefficients
 
     x_noisy = None  # WRITE CODE HERE
-
+    sqrt_clear_alpha_t = extract(sqrt_alphas_cumprod, t, x_start.shape)
+    sqrt_noise_alpha_t = extract(sqrt_one_minus_alphas_cumprod, t, x_start.shape)
+    x_noisy = (sqrt_clear_alpha_t  * x_start + sqrt_noise_alpha_t * noise)
     return x_noisy
 
 
@@ -70,11 +72,18 @@ def p_sample(model, x, t, t_index, coefficients, noise=None):
         )
 
         p_mean = None  # WRITE CODE HERE
-
+        epsilone = model(x, t)
+        sqrt_recip_alphas_t = extract(sqrt_recip_alphas, t, x.shape)
+        betas_t = extract(betas, t, x.shape)
+        sqrt_one_minus_alpha_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t, x.shape)
+        p_mean =  sqrt_recip_alphas_t * (x - betas_t * epsilone / sqrt_one_minus_alpha_cumprod_t)
         if t_index == 0:
             sample = p_mean
         else:
             sample = None  # WRITE CODE HERE
+            noise = torch.randn_like(x)
+            posterior_var_t = extract(posterior_variance, t, x.shape)
+            sample = p_mean + torch.sqrt(posterior_var_t) * noise
 
         return sample
 
