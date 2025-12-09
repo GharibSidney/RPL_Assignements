@@ -3,23 +3,23 @@
     "baseline": {
       "epochs": 30,
       "params": 1846980,
-      "kid": 0.05922116756439209,
-      "sampling_time_s": 0.020473199998377822,
-      "throughput_img_per_s": 50016.607080531416,
-      "train_time_total_s": 210.89742730004946,
-      "train_time_per_epoch_s": 7.029914243334982
+      "kid": 0.05819546461105347,
+      "sampling_time_s": 0.018353200001001824,
+      "throughput_img_per_s": 55794.08495216661,
+      "train_time_total_s": 231.9674984999583,
+      "train_time_per_epoch_s": 7.73224994999861
     }
   },
   "VAE": {
     "baseline": {
       "epochs": 30,
       "params": 3518214,
-      "kid": 0.296482617855072,
-      "nll": -3623.202247265625,
-      "sampling_time_s": 0.020860199991147965,
-      "throughput_img_per_s": 49088.695239476845,
-      "train_time_total_s": 166.83106550009688,
-      "train_time_per_epoch_s": 5.561035516669896
+      "kid": 0.2933098030090332,
+      "nll": -3616.739925390625,
+      "sampling_time_s": 0.022119899993413128,
+      "throughput_img_per_s": 46293.15685445807,
+      "train_time_total_s": 171.6472292999897,
+      "train_time_per_epoch_s": 5.7215743099996565
     }
   },
   "PixelCNN": {
@@ -28,21 +28,21 @@
       "params": 268992,
       "kid": 0.161173038482666,
       "nll": 3.8218883686065674,
-      "sampling_time_s": 283.8230419999891,
-      "throughput_img_per_s": 3.6078818435045856,
-      "train_time_total_s": 542.5294239999348,
-      "train_time_per_epoch_s": 18.08431413333116
+      "sampling_time_s": 541.543011099995,
+      "throughput_img_per_s": 1.8908932051768645,
+      "train_time_total_s": 534.019054599994,
+      "train_time_per_epoch_s": 17.800635153333133
     }
   },
   "DDPM": {
     "baseline": {
       "epochs": 30,
       "params": 6993987,
-      "kid": 0.05981858730316162,
-      "sampling_time_s": 181.98717189999297,
-      "throughput_img_per_s": 5.626770224017309,
-      "train_time_total_s": 916.2292487999948,
-      "train_time_per_epoch_s": 30.540974959999826
+      "kid": 0.058966214656829836,
+      "sampling_time_s": 184.1386538000006,
+      "throughput_img_per_s": 5.561026861379154,
+      "train_time_total_s": 1130.9134282000232,
+      "train_time_per_epoch_s": 37.69711427333411
     }
   }
 }
