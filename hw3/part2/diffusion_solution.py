@@ -4,27 +4,32 @@ import numpy as np
 from tqdm import tqdm
 
 
+# def extract(a, t, x_shape):
+#     """
+#     Takes a data tensor `a` and an index tensor `t`, and returns a new tensor
+#     whose i^th element is just a[t[i]]. This will be useful when we want to choose
+#     the alphas or betas corresponding to different indices `t` in a batched manner
+#     without for loops.
+
+#     Inputs:
+#         a: Tensor, generally of shape (batch_size,)
+#         t: Tensor, generally of shape (batch_size,)
+#         x_shape: Shape of the data, generally (batch_size, 3, 32, 32)
+#     Returns:
+#         out: Tensor of shape (batch_size, 1, 1, 1) generally, where the number of 1s 
+#              is determined by the number of dimensions in x_shape.
+#              out[i] contains a[t[i]]
+#     """
+
+#     t = t.to(a.device)
+
+#     out = a.gather(0, t)
+#     return out.reshape(t.shape[0], *((1,) * (len(x_shape) - 1)))
 def extract(a, t, x_shape):
-    """
-    Takes a data tensor `a` and an index tensor `t`, and returns a new tensor
-    whose i^th element is just a[t[i]]. This will be useful when we want to choose
-    the alphas or betas corresponding to different indices `t` in a batched manner
-    without for loops.
-
-    Inputs:
-        a: Tensor, generally of shape (batch_size,)
-        t: Tensor, generally of shape (batch_size,)
-        x_shape: Shape of the data, generally (batch_size, 3, 32, 32)
-    Returns:
-        out: Tensor of shape (batch_size, 1, 1, 1) generally, where the number of 1s 
-             is determined by the number of dimensions in x_shape.
-             out[i] contains a[t[i]]
-    """
-
-    t = t.to(a.device)
-
+    a = a.to(t.device)
     out = a.gather(0, t)
-    return out.reshape(t.shape[0], *((1,) * (len(x_shape) - 1)))
+    return out.view(t.shape[0], *([1] * (len(x_shape) - 1)))
+
 
 
 def q_sample(x_start: torch.tensor, t:torch.tensor, coefficients:tuple, noise=None):

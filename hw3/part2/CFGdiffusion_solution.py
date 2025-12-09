@@ -4,17 +4,23 @@ import numpy as np
 from tqdm import tqdm
 
 
+# def extract(a, t, x_shape):
+#     """
+#     Safe device-aware indexing: returns a[t[i]] for each i, reshaped for broadcasting
+#     into x_shape (i.e. shape (B, 1, 1, 1, ...)).
+#     a: 1-D tensor of length T on some device
+#     t: LongTensor of shape (B,) on any device
+#     x_shape: tuple e.g. (B, C, H, W)
+#     """
+#     t = t.to(a.device)
+#     out = a[t]
+#     return out.reshape(t.shape[0], *((1,) * (len(x_shape) - 1)))
+
 def extract(a, t, x_shape):
-    """
-    Safe device-aware indexing: returns a[t[i]] for each i, reshaped for broadcasting
-    into x_shape (i.e. shape (B, 1, 1, 1, ...)).
-    a: 1-D tensor of length T on some device
-    t: LongTensor of shape (B,) on any device
-    x_shape: tuple e.g. (B, C, H, W)
-    """
-    t = t.to(a.device)
-    out = a[t]
-    return out.reshape(t.shape[0], *((1,) * (len(x_shape) - 1)))
+    a = a.to(t.device)     # <--- THIS FIXES EVERYTHING
+    out = a.gather(0, t)
+    return out.view(t.shape[0], *([1] * (len(x_shape) - 1)))
+
 
 
 def q_sample(x_start, t, coefficients, noise=None):
@@ -47,13 +53,13 @@ def p_sample(model, x, t, t_index, coefficients, y=None, guidance_scale=1.0, noi
 
     betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance = coefficients
 
-    eps_uncond = model(x, t, y=None)
+    epsilon_unconditional = model(x, t, y=None)
 
     if y is None or guidance_scale == 0.0:
-        eps_theta = eps_uncond
+        eps_theta = epsilon_unconditional
     else:
         eps_cond = model(x, t, y)
-        eps_theta = eps_uncond + guidance_scale * (eps_cond - eps_uncond)
+        eps_theta = epsilon_unconditional + guidance_scale * (eps_cond - epsilon_unconditional)
 
     betas_t = extract(betas, t, x.shape)
     sqrt_one_minus_alphas_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t, x.shape)
@@ -120,7 +126,7 @@ def p_losses(denoise_model, x_start, t, coefficients, y=None, p_uncond=0.1, nois
 
     if len(coefficients) == 4:
         # coefficients may be (betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance)
-        betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance = coefficients
+        _, sqrt_one_minus_alphas_cumprod, _, _ = coefficients
         alphas_cumprod = 1.0 - (sqrt_one_minus_alphas_cumprod ** 2)
         sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
         q_coeffs = (sqrt_alphas_cumprod.to(device), sqrt_one_minus_alphas_cumprod.to(device))
